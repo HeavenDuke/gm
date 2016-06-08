@@ -170,6 +170,42 @@ require("./lib/compare")(gm.prototype);
 require("./lib/composite")(gm.prototype);
 require("./lib/montage")(gm.prototype);
 
+
+var Promise = require('promise');
+function genPromise(fn) {
+    return function() {
+        var that = this;
+        var l = arguments.length;
+        var args = [];
+        for (var i=0; i<l; ++i)
+            args.push(arguments[i])
+        return new Promise(function (fulfill, reject){
+            args.push(function (err, res){
+              if (err) reject(err);
+              else fulfill(res);
+            });
+            fn.apply(that, args);
+        });
+    }
+}
+
+var funcnames = [
+    "write", "identify", "size", "stream", "toBuffer", "thumb", "morph"
+];
+
+
+for (var i in funcnames) {
+    var name = funcnames[i];
+    gm.prototype[name+"Promise"] = genPromise(gm.prototype[name]);
+}
+
+
+// var gsize = genPromise(gm.prototype.size).bind(image)
+// gsize().done(function(res){
+//     console.dir(res)
+// });
+
+
 /**
  * Expose. 暴露部分接口
  */
